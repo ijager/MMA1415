@@ -1,0 +1,16 @@
+def load_images():
+    print("Loading Images")
+    filenames = ["King Arthur.jpg", "Sir Lancelot.jpg", "Sir Galahad.jpg", "Tim.jpg", "Scene 24.jpg"]   
+    filenames.append('Sir Robin')
+    filenames.append('Minstrels')
+    filenames.append(2.5)
+    filenames.append('Minstrels')
+    filenames.append(3) 
+    filenames.remove("Sir Lancelot.jpg")
+    filenames.remove("Minstrels")
+    for name in filenames:
+        print("Filename: %s type: %s" %(name, type(name)))
+   
+    return []
+
+load_images()
