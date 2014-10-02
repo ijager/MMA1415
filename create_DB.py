@@ -3,7 +3,8 @@ import glob
 import Vocabulary
 import pickle
 
-image_path = "test_images/"
+#image_path = "test_images/"
+image_path = "ukbench/full/"
 types = ('*.jpg', '*.JPG', '*.png')
 sift_features = None
 
@@ -20,15 +21,13 @@ if sift_features == None:
 		files = image_path + type_
 		image_list.extend(glob.glob(files))	
 
-	print image_list[0:4]
-
-	sift_features = feat.get_sift_features(image_list[0:10])
+	sift_features = feat.get_sift_features(image_list[0:500])
 	pickle.dump(sift_features, sift_file)
 
-	print sift_features
+print 'Creating vocabulary ... \n'
 
 voc = Vocabulary.Vocabulary('visual')
-voc.train(sift_features)
+voc.train(sift_features, 1000, 100)
 
 with open('vocabulary.pkl', 'wb') as f: 
 	pickle.dump(voc,f)
