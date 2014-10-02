@@ -1,4 +1,5 @@
 import image_search
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -28,6 +29,11 @@ def plot_results(src,res):
 		plt.axis('off') 
 	plt.show()
 
+def plot_query(im):
+	print 'query image = ', im
+	plt.figure()
+	plt.imshow(cv2.imread(im))
+	plt.axis('off') 
 
 print 'loading vocabulary ...'
 
@@ -43,15 +49,16 @@ with open('sift.pkl', 'rb') as f_s:
 	
 src = image_search.Searcher('test.db', voc)
 
-key = features.keys()[0]
+key = random.choice(features.keys())
 iw = voc.project(features[key])
-print 'ask using a histogram...'
-print src.candidates_from_histogram(iw)[:10]
+#print 'ask using a histogram...'
+#print src.candidates_from_histogram(iw)[:10]
 
 print 'try a query...'
-print src.query(features.keys()[336])[:10]
+print src.query(key)[:10]
 
 nbr_results = 6
 res = [w[1] for w in src.query(key)[:nbr_results]] 
+plot_query(key)
 plot_results(src,res)
 
