@@ -20,19 +20,21 @@ def compute_ukbench_score(src, imlist):
 
 def plot_results(src,res):
 	""" Show images in result list 'res'."""
-	plt.figure()
+	fig = plt.figure()
 	nbr_results = len(res)
 	for i in range(nbr_results):
 		imname = src.get_filename(res[i]) 
 		plt.subplot(1,nbr_results,i+1)
 		plt.imshow(cv2.imread(imname))
 		plt.axis('off') 
+	fig.canvas.set_window_title('Visual BoW results')
 	plt.show()
 
 def plot_query(im):
 	print 'query image = ', im
 	plt.figure()
 	plt.imshow(cv2.imread(im))
+	plt.title('Query Image')
 	plt.axis('off') 
 
 print 'loading vocabulary ...'
@@ -44,8 +46,11 @@ with open('vocabulary.pkl', 'rb') as f:
 print 'loading features ...'
 
 # load feature set
-with open('sift.pkl', 'rb') as f_s:
-	features = pickle.load(f_s)
+with open('sift.pkl', 'rb') as f:
+	features = pickle.load(f)
+
+with open('colorhist.pkl', 'rb') as f:
+	colorhist_features = pickle.load(f)
 	
 src = image_search.Searcher('test.db', voc)
 
@@ -60,5 +65,19 @@ print src.query(key)[:10]
 nbr_results = 6
 res = [w[1] for w in src.query(key)[:nbr_results]] 
 plot_query(key)
+
+print 'colorhist query ...'
+hist = src.get_colorhist(key)
+candidates = src.candidates_from_colorhist(hist, colorhist_features)
+fig = plt.figure()
+i = 0
+for candidate in candidates[0:6]:
+	im = cv2.imread(candidate)
+	plt.subplot(1,6,i+1)
+	plt.imshow(im)
+	plt.axis('off') 
+	i+=1
+fig.canvas.set_window_title('Colorhist results')
 plot_results(src,res)
+
 

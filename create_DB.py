@@ -11,6 +11,8 @@ sift_features = None
 
 nbr_images = 500
 
+# SIFT Features
+
 try:
 	sift_file = open('sift.pkl', 'rb')
 	sift_features = pickle.load(sift_file)
@@ -41,6 +43,26 @@ except:
 		pickle.dump(voc,f)
 	print 'vocabulary is:', voc.name, voc.nbr_words
 
+
+# Colorhist features
+
+try:
+	with open('colorhist.pkl', 'rb') as f:
+		colorhist_features = pickle.load(f)
+except:
+	print 'Generating Colorhist features ... \n'
+	with open('colorhist.pkl', 'wb') as f:
+		image_list = []
+		for type_ in types:
+			files = image_path + type_
+			image_list.extend(glob.glob(files))	
+
+		colorhist_features = feat.get_colorhist(image_list[0:nbr_images])
+		pickle.dump(colorhist_features, f)
+
+
+
+
 print 'Creating database ... \n'
 
 # create indexer
@@ -51,6 +73,7 @@ keys = sift_features.keys()
 # go through all images, project features on vocabulary and insert
 for i in range(nbr_images):
 	indx.add_to_index(keys[i], sift_features[keys[i]])
+	indx.add_colorhist_to_index(keys[i], colorhist_features[keys[i]])
 	
 # commit to database
 indx.db_commit()

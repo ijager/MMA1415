@@ -19,6 +19,7 @@ class Indexer(object):
 		self.con.execute('create table imlist(filename)') 
 		self.con.execute('create table imwords(imid,wordid,vocname)') 
 		self.con.execute('create table imhistograms(imid,histogram,vocname)') 
+		self.con.execute('create table colorhists(imid, hist)')
 		self.con.execute('create index im_idx on imlist(filename)') 
 		self.con.execute('create index wordid_idx on imwords(wordid)') 
 		self.con.execute('create index imid_idx on imwords(imid)') 
@@ -49,6 +50,17 @@ class Indexer(object):
 		# store word histogram for image
 		# use pickle to encode NumPy arrays as strings
 		self.con.execute("insert into imhistograms(imid,histogram,vocname) values (?,?,?)", (imid,pickle.dumps(imwords), self.voc.name))
+
+	def add_colorhist_to_index(self, imname, hist):
+
+	#	if self.is_indexed(imname):
+	#		return
+		print 'indexing', imname
+
+		# get the imid
+		imid = self.get_id(imname)
+
+		self.con.execute("insert into colorhists(imid, hist) values (?,?)", (imid, pickle.dumps(hist)))
 
 	def is_indexed(self, imname):
 		""" Returns True is imname has been indexed. """
@@ -85,6 +97,20 @@ class Searcher:
 				"select distinct imid from imwords where wordid=%d" % imword).fetchall()
 		return [i[0] for i in im_ids]
 
+
+	def color_hist_distance(hist1, hist2):
+		return np.sum((hist1-hist2)**2)
+
+	def candidates_from_colorhist(self, hist, features):
+		result = []
+		names = []
+		for key in features.keys():
+			d = np.sum((hist-features[key])**2)
+			result.append(d)
+			names.append(key)
+		i = np.argsort(result)
+		return np.array(names)[i]
+
 	def candidates_from_histogram(self, imwords):
 		""" Get list of images wth similar words. """
 
@@ -104,6 +130,18 @@ class Searcher:
 		# return sorted list, best matches first
 		return [w[0] for w in tmp]
 
+	def get_colorhist(self, imname):
+		""" Return the color histogram for an image. """
+		im_id = self.con.execute(
+				"select rowid from imlist where filename='%s'" % imname).fetchone()
+		s = self.con.execute(
+				"select hist from colorhists where rowid='%d'" % im_id).fetchone()
+
+		# use pickle to decode NumPy arrays from string
+		return pickle.loads(str(s[0]))
+
+
+	
 	def get_imhistogram(self, imname):
 		""" Return the word histogram for an image. """
 
