@@ -21,19 +21,22 @@ print "============\n"
 types = ('*.jpg', '*.JPG', '*.png')
 image_list = []
 for type_ in types:
-	files = args.image_path + type_
-	image_list.extend(glob.glob(files))	
+    files = args.image_path + type_
+    image_list.extend(glob.glob(files))	
 
 for image in image_list:
-	im = cv2.imread(image)
-        h,w,d = im.shape
-        new_width = int(args.width)
-        if args.preserve.lower() == 'true':
-            ratio = float(w)/new_width
-            new_height = int(h / ratio)
-        else:
-            new_height = int(args.height)
-        im = cv2.resize(im, (new_width,new_height))
+    im = cv2.imread(image)
+    h,w,d = im.shape
+    new_width = int(args.width)
+    if args.preserve.lower() == 'true':
+        ratio = float(w)/new_width
+        new_height = int(h / ratio)
+    else:
+        new_height = int(args.height)
+    im = cv2.resize(im, (new_width,new_height))
+    if (outfile != ''):
         outfile = args.output +'/'+ image.split('/')[-1]
-        print 'resized: ', outfile
-        cv2.imwrite(outfile, im)
+    else:
+        outfile = image
+    print 'resized: ', outfile
+    cv2.imwrite(outfile, im)
