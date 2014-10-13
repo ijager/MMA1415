@@ -69,6 +69,7 @@ base=os.path.basename(args.database).split('.')[0]
 sift_features = None
 sift_vocabulary = None
 harris_features = None
+harris_vocabulary = None
 colorhist_features = None
 meta_features = None
 
@@ -97,6 +98,22 @@ if feature_active('colorhist'):
 
 if feature_active('harris'):
     harris_features = compute_features(image_list, 'harris', ft.get_harris_features)
+
+    # visual vocabulary
+    
+    fname = args.prefix + base + '_harris_vocabulary.pkl'
+    if os.path.isfile(fname):
+        compute = raw_input("Found existing vocabulary: " + fname + " Do you want to recompute it? ([Y]/N): ")
+    else:
+        compute = 'Y'
+    if compute == 'Y' or compute == '':
+	print 'Creating vocabulary ... \n'
+        harris_vocabulary = Vocabulary.Vocabulary(base)
+        harris_vocabulary.train(harris_features, args.clusters)
+        fname = args.prefix + base + '_harris_vocabulary.pkl'
+	with open(fname, 'wb') as f: 
+            pickle.dump(harris_vocabulary,f)
+
 
 #if feature_active('meta'):
 #    meta_features = compute_features(image_list, 'meta', ft.get_meta_data)

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import progressbar
+import harris
 
 def get_harris_features(im_list):
     total = len(im_list)
@@ -12,7 +13,13 @@ def get_harris_features(im_list):
     count = 0
     for im_name in im_list:
         im = cv2.imread(im_name)
-        dst = cv2.cornerHarris(im, 2, 3, 0.04)
+        response = harris.compute_harris_response(im)
+        points = harris.get_harris_points(response)
+        desc = harris.get_descriptors(im, points)
+        features[im_name] = desc
+        bar.update(count)
+        count += 1
+    return features
 
 
 def get_colorhist(im_list):
