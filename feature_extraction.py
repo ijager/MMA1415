@@ -12,13 +12,15 @@ def get_harris_features(im_list):
     features = {}
     count = 0
     for im_name in im_list:
-        im = cv2.imread(im_name)
-        response = harris.compute_harris_response(im)
+        im = cv2.imread(im_name, 0)
+        #response = harris.compute_harris_response(im)
+        response = cv2.cornerHarris(im, 7, 5, 0.05)
         points = harris.get_harris_points(response)
         desc = harris.get_descriptors(im, points)
-        features[im_name] = desc
+        features[im_name] = np.array(desc)
         bar.update(count)
         count += 1
+    bar.finish()
     return features
 
 
@@ -41,7 +43,7 @@ def get_colorhist(im_list):
         features[im_name] = color_hist
         bar.update(count)
         count += 1
-    print 'Finished\n'
+    bar.finish()
     return features
 
 def get_sift_features(im_list):
@@ -60,7 +62,5 @@ def get_sift_features(im_list):
         kp, desc = sift.detectAndCompute(im, None)
         features[im_name] = desc
         count += 1
-    bar.update(count)
-    print 'Finished\n'
-    
+    bar.finish()
     return features

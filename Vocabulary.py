@@ -18,8 +18,9 @@ class Vocabulary(object):
                 of training data can be used for speedup. """
                 
         nbr_desc = len(features)
-        #stack all features for k-means
-        descriptors = np.array([], dtype=np.float32).reshape(0,128)
+        # stack all features for k-means
+        # create empty array so we can stack new values against it
+        descriptors = np.array([], dtype=np.float32).reshape(0,features.values()[0].shape[1])
         for feat in features.values():
             descriptors = np.vstack((descriptors, feat))
 

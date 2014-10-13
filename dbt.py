@@ -5,7 +5,7 @@ import argparse
 import feature_extraction as ft
 import glob
 import Vocabulary
-import image_search
+import db_index
 import pickle
 import os.path
 
@@ -49,7 +49,8 @@ parser.add_argument("--prefix","-p",  help="prefix path to database directory, d
 parser.add_argument("--clusters", "-c", help="Number of clusters for K-Means clustering algorithm'", default=100)
 
 args = parser.parse_args()
-
+if not os.path.exists(args.prefix):
+    os.makedirs(args.prefix)
 
 print '\nMulti Media Analysis Database tool'
 print '==================================\n'
@@ -85,7 +86,7 @@ if feature_active('sift'):
     else:
         compute = 'Y'
     if compute == 'Y' or compute == '':
-	print 'Creating vocabulary ... \n'
+	print 'Creating SIFT vocabulary ... '
         sift_vocabulary = Vocabulary.Vocabulary(base)
         sift_vocabulary.train(sift_features, args.clusters)
         fname = args.prefix + base + '_sift_vocabulary.pkl'
@@ -107,7 +108,7 @@ if feature_active('harris'):
     else:
         compute = 'Y'
     if compute == 'Y' or compute == '':
-	print 'Creating vocabulary ... \n'
+	print 'Creating Harris vocabulary ... '
         harris_vocabulary = Vocabulary.Vocabulary(base)
         harris_vocabulary.train(harris_features, args.clusters)
         fname = args.prefix + base + '_harris_vocabulary.pkl'
@@ -119,8 +120,8 @@ if feature_active('harris'):
 #    meta_features = compute_features(image_list, 'meta', ft.get_meta_data)
 
 
+# DATABASE Creating and insertion
 
-print 'Creating database ... \n'
 
 db_name = args.prefix + base + '.db'
 
@@ -151,7 +152,7 @@ else:
 
 
 # create indexer
-indx = image_search.Indexer(db_name) 
+indx = db_index.Indexer(db_name) 
 if new == True:
     indx.create_tables()
 
@@ -164,7 +165,7 @@ if feature_active('sift'):
     if sift_features == None:
         sift_features = load_features('sift')
 
-    print 'Adding sift features to database ... '
+    print '\nAdding sift features to database ...\n'
     for i in range(len(image_list)):
         indx.add_to_index('sift', image_list[i], sift_features[image_list[i]], sift_vocabulary)
 
@@ -172,7 +173,7 @@ if feature_active('colorhist'):
     if colorhist_features == None:
         colorhist_features = load_features('colorhist')
 
-    print 'Adding colorhist features to database ... '
+    print '\nAdding colorhist features to database ...\n'
     for i in range(len(image_list)):
         indx.add_to_colorhist_index(image_list[i], colorhist_features[image_list[i]])
 
@@ -182,7 +183,7 @@ if feature_active('harris'):
     if harris_features == None:
         harris_features = load_features('harris')
 
-    print 'Adding harris features to database ... '
+    print '\nAdding harris features to database ...\n'
     for i in range(len(image_list)):
         indx.add_to_index('harris', image_list[i], harris_features[image_list[i]], harris_vocabulary)
 
@@ -194,4 +195,4 @@ if feature_active('harris'):
 # commit to database
 indx.db_commit()
 
-print 'Done\n'
+print '\nDone\n'
