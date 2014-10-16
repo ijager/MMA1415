@@ -53,10 +53,7 @@ if __name__ == '__main__':
 
         sift_query = ft.get_sift_features([args.query])[args.query]
         image_words = sift_vocabulary.project(sift_query)
-        print sift_query
-        print image_words
         print 'Query database with a histogram...'
-        print search.candidates_from_histogram('sift', image_words)[:10]
         candidates = search.query_iw('sift', image_words)
         print candidates[0:10]
         for cand in candidates[0:10]:
@@ -66,6 +63,23 @@ if __name__ == '__main__':
         print 'Loading Harris vocabulary ...'
         fname = args.prefix + base + '_harris_vocabulary.pkl'
         with open(fname, 'rb') as f:
-            sift_vocabulary = pickle.load(f)
+            harris_vocabulary = pickle.load(f)
+
+        harris_query = ft.get_harris_features([args.query])[args.query]
+        image_words = harris_vocabulary.project(harris_query)
+        print 'Query database with a histogram...'
+        candidates = search.query_iw('harris', image_words)
+        print candidates[0:10]
+        for cand in candidates[0:10]:
+            print search.get_filename(cand[1])
 
 
+    if feature_active('colorhist'):
+        print 'Load colorhist features ..'
+        fname = args.prefix + base + '_colorhist.pkl'
+        with open(fname, 'rb') as f:
+            colorhist_features = pickle.load(f)
+        
+        colorhist_query = ft.get_colorhist([args.query])[args.query]
+        candidates = search.candidates_from_colorhist(colorhist_query, colorhist_features)
+        print candidates[0:10]
