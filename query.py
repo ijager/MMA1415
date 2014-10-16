@@ -16,6 +16,7 @@ import metadata_distance
 sift_candidates = None
 harris_candidates = None
 colorhist_candidates = None
+geo_candidates = None
 
 
 # Command line parsing is handled by the ArgumentParser object
