@@ -2,7 +2,17 @@ import cv2
 import numpy as np
 import progressbar
 import harris
+import feature_extraction_metadata as meta
 
+def extract_metadata(im_list):
+	features = {}
+	for im_name in im_list:
+		tags = meta.extract_tags(im_name)
+		geotags = meta.extract_exif(im_name)
+		features[im_name] = (tags, geotags)
+		
+	return features	
+	
 def get_harris_features(im_list):
     total = len(im_list)
     bar = progressbar.ProgressBar(maxval=total, \

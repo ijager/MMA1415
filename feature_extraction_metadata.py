@@ -47,15 +47,7 @@ def extract_exif(filename):
 		
 	return 0
 
-def extract_metadata(im_list):
-	features = []
-	for im_name in im_list:
-		tags = extract_tags(im_name)
-		geotags = extract_exif(im_name)
-		features.append( (tags, geotags) )
-		
-	return features	
-	
+
 
 
 

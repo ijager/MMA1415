@@ -28,6 +28,7 @@ class Vocabulary(object):
         #k-means
         self.voc, distortion = kmeans(descriptors[::subsampling,:],k,1)
         self.nbr_words = self.voc.shape[0]
+
         # go through all training images and project on vocabulary
         imwords = np.zeros((nbr_desc, self.nbr_words))        
         bar = progressbar.ProgressBar(maxval=nbr_desc, \
@@ -36,7 +37,7 @@ class Vocabulary(object):
         count = 0
         for desc in features.values():
             bar.update(count)
-            imwords = self.project(desc)
+            imwords[count] = self.project(desc)
             count += 1
         bar.finish()
 

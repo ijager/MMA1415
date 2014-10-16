@@ -9,6 +9,7 @@ import feature_extraction as ft
 import sys
 import image_search
 import os.path
+import metadata_distance 
 
 
 # global variables
@@ -19,7 +20,7 @@ colorhist_candidates = None
 
 # Command line parsing is handled by the ArgumentParser object
 
-features = ['sift', 'colorhist', 'harris', 'meta', 'all']
+features = ['sift', 'colorhist', 'harris', 'geo', 'all']
 
 parser = argparse.ArgumentParser(description="Query tool to query the database created by the database tool (dbt.py). Retrieve images based on image content and metadata.")
 parser.add_argument("database", help="Path to the database to execute the query on.")
@@ -89,7 +90,26 @@ if __name__ == '__main__':
         print 'Query database with a colorhistogram'
         # Compare the query colorhist with the dataset and retrieve an ordered list of candidates
         colorhist_candidates = search.candidates_from_colorhist(colorhist_query, colorhist_features)
+    
+    if feature_active('geo'):
+        print 'Load geo data ..'
+        fname = base + '_meta.pkl'
+        with open(fname, 'rb') as f:
+            geo_features = pickle.load(f)
 
+        metadata = ft.extract_metadata([args.query])[args.query]
+        if not metadata_distance.has_geotag(metadata):
+            print 'Error: query image has no geotag!'
+            sys.exit(1)
+        distances = []
+        for key in geo_features.keys():
+            candidate_metadata = geo_features[key]
+            if metadata_distance.has_geotag(candidate_metadata):
+                distances.append((key, metadata_distance.compute_geographic_distance(metadata, candidate_metadata)))
+            
+        geo_candidates = sorted(distances, key = lambda x: x[1])
+            
+        
 
 
 
@@ -106,7 +126,7 @@ if __name__ == '__main__':
     plt.axis('off')
     fig.canvas.set_window_title('Query Image') 
 
-    def plot_results(im_list, title):
+    def plot_results(im_list, title, labels=None):
         fig = plt.figure()
         i = 1
         for im_name in im_list:
@@ -114,7 +134,10 @@ if __name__ == '__main__':
             im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
             plt.subplot(2,3,i)
             plt.imshow(im)
-            plt.title(i)
+            if labels == None:
+                plt.title(i)
+            else:
+                plt.title('D = '+str(labels[i-1])+'[m]')
             plt.axis('off')
             i += 1
         fig.canvas.set_window_title(title) 
@@ -131,6 +154,9 @@ if __name__ == '__main__':
     if not colorhist_candidates == None:
         plot_results(colorhist_candidates[0:6], 'Colorhistogram Results')
 
+    if not geo_candidates == None:
+        labels = [x[1] for x in geo_candidates][0:6]
+        plot_results([x[0] for x in geo_candidates][0:6], 'Geodistances Results', labels = labels)
    
     # Add Key event to close the application with the 'q' or 'escape' key
     def onKey(event):

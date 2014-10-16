@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 import math
 import numpy as np
 import scipy.cluster.hierarchy as h_cluster
 from scipy.cluster.hierarchy import linkage as h_linkage
 import scipy.spatial.distance as ssd
-from Levenshtein import distance as levenshtein_distance
 from geopy.distance import vincenty
 
 
@@ -28,8 +28,8 @@ def compute_geographic_distance(m1,m2):
 		# can't do geographic distance
 		geographical_dist = 0		
 	else:
-		geo1 = lonlat_to_decimal(m1)
-		geo2 = lonlat_to_decimal(m2)
+		geo1 = lonlat_to_decimal(m1[1])
+		geo2 = lonlat_to_decimal(m2[1])
 		
 		geographical_dist = vincenty(geo1,geo2)
 	return geographical_dist.meters
@@ -68,119 +68,6 @@ def compute_predefined_tags_distance(m1,m2):
 		distance += 1	
 		
 	return distance
-	
-def compute_freechoice_tag_distance(m1,m2):
-	nameA = m1[0][-1].split('.')[0]
-	nameB = m2[0][-1].split('.')[0]
-	return levenshtein_distance(nameA,nameB)
-
-def compute_distance(m1, m2):
-	predefined_tags_dist	= compute_predefined_tags_distance(m1,m2)
-	free_choice_tag_dist 	= compute_freechoice_tag_distance(m1,m2)
-	geographical_dist 		= compute_geographic_distance(m1,m2)
-	
-	print(predefined_tags_dist)
-	print(free_choice_tag_dist)
-	print(geographical_dist)
-		
-		
-	return predefined_tags_dist + free_choice_tag_dist + geographical_dist
-	
-def rank_by_geocluster(geotagged_images):
-	N = len(geotagged_images)
-	geodistance_matrix = np.zeros((N,N))
-	if(N > 0):
-		for i in range(0,N):
-			for j in range(i+1,N):
-				d = int(compute_geographic_distance(geotagged_images[i][1],geotagged_images[j][1]))
-				geodistance_matrix[i,j] = d
-				geodistance_matrix[j,i] = d
-		
-	L = h_linkage(ssd.squareform(geodistance_matrix))
-	C = h_cluster.fcluster(L,0.8) # KB: I don't know what the 0.8 should be doing here :S. This is just a guess
-	cluster_list = []
-	for i in range(len(geotagged_images)):
-		cluster_list.append((C[i],geotagged_images[i]))
-
-	
-	# rank the clusters based on distance to the query image
-	# as a distance function, we just use the average distance to the 
-	# cluster elements
-	
-	# for each cluster
-		# for every image in that cluster
-			# retrieve the distance to that image
-			# add distance to sum
-		# divide by nr of images in cluster
-		# store average cluster distance
-		
-	clus_avg_distances = {}
-	
-	for k in range(1,max(C)+1):
-		clus_avg_distances[k] = 0
-		
-	distances_to_query = geodistance_matrix[0,:]
-	for clus_num in C:
-		s = clus_avg_distances[clus_num]
-		count = 0
-		for i in range(N):
-			if C[i] == clus_num:
-				s += distances_to_query[i]
-		s = s / list(C).count(clus_num)
-		clus_avg_distances[clus_num] = s
-	
-	clus_avg_distances = clus_avg_distances.items()
-	clus_avg_distances = sorted(clus_avg_distances, key=lambda x: x[1])
-	return (C, clus_avg_distances)
-	
-def rank_by_predef_tags(query_metadata, geotagged_images, clusters, clus_avg_distances):
-	# take the images in the highest ranked cluster
-	# while there are less than 10 candidates, add whole clusters
-	top_georanked_candidates = []
-	clus_rank = 0 # use this later to know how many ranked clusters we end up with
-	while(len(top_georanked_candidates) < 20): #assume there are at least 10 geotagged images!!!
-		next_cluster_number = clus_avg_distances[clus_rank][0]
-		# retrieve all images in the cluster with this number
-		# add them to the top georanked candidates
-		for i in range(len(geotagged_images)):
-			if clusters[i] == next_cluster_number:
-				top_georanked_candidates.append((clus_rank, geotagged_images[i]))
-		
-		clus_rank+=1
-		
-	# for i in range(len(top_georanked_candidates)):
-	#	print (str(top_georanked_candidates[i][0]) + " " + str(top_georanked_candidates[i][1][0][4])) 
-	
-	# rank those in the highest cluster on predefined tag similarity
-	# then go through the next clusters and rank those in the same way
-	top_predef_candidates = []
-	for rank in range(clus_rank):
-		single_cluster = [x[1] for x in top_georanked_candidates if x[0] == rank]
-		single_cluster_ranking = []
-		for m in single_cluster:
-			# add the rank to the distance so that a better cluster always has lower distance
-			single_cluster_ranking.append((compute_predefined_tags_distance(m, query_metadata)+rank, m))
-		single_cluster_ranking = sorted(single_cluster_ranking, key=lambda x: x[0])
-		top_predef_candidates.extend(single_cluster_ranking)
-	
-	return top_predef_candidates
-	
-def rank_by_free_tags(query_metadata, geotagged_images, top_predef_candidates):
-	# now rank ties based on free tag similarity
-	final_ranking = []		
-	worst_rank = max([x[0] for x in top_predef_candidates])
-	worst_from_previous_cluster = 0
-	for rank in range(worst_rank):
-		tied_rank = [x[1] for x in top_predef_candidates if x[0] == rank]
-		tiebreaker = []
-		for m in tied_rank:
-			tiebreaker.append((compute_freechoice_tag_distance(m, query_metadata)+worst_from_previous_cluster,m))
-		tiebreaker = sorted(tiebreaker, key=lambda x: x[0])
-		if len(tiebreaker) > 0:
-			worst_from_previous_cluster = tiebreaker[-1][0]
-		final_ranking.extend(tiebreaker) # note that if the freechoice distance is the same, this still contains ties
-		
-	return final_ranking
 	
 	
 def metadata_ranking(list_of_metadata, query_metadata):

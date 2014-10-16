@@ -153,8 +153,8 @@ if __name__ == '__main__':
                 pickle.dump(harris_vocabulary,f)
 
 
-    #if feature_active('meta'):
-    #    meta_features = compute_features(image_list, 'meta', ft.get_meta_data)
+    if feature_active('meta'):
+        meta_features = compute_features(image_list, 'meta', ft.extract_metadata)
 
 
     # DATABASE Creating and insertion
@@ -207,13 +207,13 @@ if __name__ == '__main__':
         for i in range(len(image_list)):
             indx.add_to_index('sift', image_list[i], sift_features[image_list[i]], sift_vocabulary)
 
-    if feature_active('colorhist'):
-        if colorhist_features == None:
-            colorhist_features = load_features('colorhist')
-
-        print '\nAdding colorhist features to database ...\n'
-        for i in range(len(image_list)):
-            indx.add_to_colorhist_index(image_list[i], colorhist_features[image_list[i]])
+   # if feature_active('colorhist'):
+   #     if colorhist_features == None:
+   #         colorhist_features = load_features('colorhist')
+#
+ #       print '\nAdding colorhist features to database ...\n'
+  #      for i in range(len(image_list)):
+   #         indx.add_to_colorhist_index(image_list[i], colorhist_features[image_list[i]])
 
     if feature_active('harris'):
         if harris_vocabulary == None:
@@ -225,12 +225,6 @@ if __name__ == '__main__':
         for i in range(len(image_list)):
             indx.add_to_index('harris', image_list[i], harris_features[image_list[i]], harris_vocabulary)
 
-    #if feature_active('meta'):
-    #    if meta_features == None:
-    #        meta_features = load_features('meta')
-
-
-    # Finally commit the changes to the database, this will make sure our features persist.
     indx.db_commit()
 
     print '\nDone\n'
