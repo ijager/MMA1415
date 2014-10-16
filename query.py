@@ -54,12 +54,15 @@ if __name__ == '__main__':
     if feature_active('sift'):
         print 'Loading SIFT vocabulary ...'
         fname = base + '_sift_vocabulary.pkl'
+        # Load the vocabulary to project the features of our query image on
         with open(fname, 'rb') as f:
             sift_vocabulary = pickle.load(f)
 
         sift_query = ft.get_sift_features([args.query])[args.query]
+        # Get a histogram of visual words for the query image
         image_words = sift_vocabulary.project(sift_query)
         print 'Query database with a SIFT histogram...'
+        # Use the histogram to search the database
         sift_candidates = search.query_iw('sift', image_words)
 
     if feature_active('harris'):
@@ -77,15 +80,21 @@ if __name__ == '__main__':
     if feature_active('colorhist'):
         print 'Load colorhist features ..'
         fname = base + '_colorhist.pkl'
+        # Load all colorhistogram features of our training data
         with open(fname, 'rb') as f:
             colorhist_features = pickle.load(f)
         
+        # Get colorhistogram for the query image
         colorhist_query = ft.get_colorhist([args.query])[args.query]
         print 'Query database with a colorhistogram'
+        # Compare the query colorhist with the dataset and retrieve an ordered list of candidates
         colorhist_candidates = search.candidates_from_colorhist(colorhist_query, colorhist_features)
 
-    # Plotting results
 
+
+
+    # Visualizing Results
+    # ==================
     
 
     # Plot query image    
@@ -110,6 +119,7 @@ if __name__ == '__main__':
             i += 1
         fig.canvas.set_window_title(title) 
 
+    # If candidates exists, show the top 6 candidates
     if not sift_candidates == None:
         sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:6]
         plot_results(sift_winners, 'SIFT Results')
@@ -121,7 +131,8 @@ if __name__ == '__main__':
     if not colorhist_candidates == None:
         plot_results(colorhist_candidates[0:6], 'Colorhistogram Results')
 
-    
+   
+    # Add Key event to close the application with the 'q' or 'escape' key
     def onKey(event):
         if event.key == 'q' or event.key == 'escape':
             sys.exit(0)

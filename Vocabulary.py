@@ -4,6 +4,7 @@ import progressbar
 
 
 class Vocabulary(object):
+    """ The Vocabulary class takes a set of features and uses K-Means clustering to train a visual vocabulary. Then it can project new features on the vocabulary to obtain a histogram of visual words. """
 
     def __init__(self, name):
         self.name = name
