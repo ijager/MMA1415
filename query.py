@@ -10,6 +10,13 @@ import sys
 import image_search
 import os.path
 
+
+# global variables
+sift_candidates = None
+harris_candidates = None
+colorhist_candidates = None
+
+
 # Command line parsing is handled by the ArgumentParser object
 
 features = ['sift', 'colorhist', 'harris', 'meta', 'all']
@@ -18,12 +25,11 @@ parser = argparse.ArgumentParser(description="Query tool to query the database c
 parser.add_argument("database", help="Path to the database to execute the query on.")
 parser.add_argument("query", help="Query image")
 parser.add_argument("feature", help="The type of feature to get results on. Chose from "+str(features))
-parser.add_argument("--prefix","-p",  help="prefix path to database directory, default = 'db/'", default="db/")
 
 args = parser.parse_args()
 
-# Get file name without extension and prefix
-base=os.path.basename(args.database).split('.')[0]
+# Get file name without extension
+base= args.database.split('.')[0]
 
 
 def feature_active(name):
@@ -47,39 +53,71 @@ if __name__ == '__main__':
     search = image_search.Searcher(db_name)
     if feature_active('sift'):
         print 'Loading SIFT vocabulary ...'
-        fname = args.prefix + base + '_sift_vocabulary.pkl'
+        fname = base + '_sift_vocabulary.pkl'
         with open(fname, 'rb') as f:
             sift_vocabulary = pickle.load(f)
 
         sift_query = ft.get_sift_features([args.query])[args.query]
         image_words = sift_vocabulary.project(sift_query)
-        print 'Query database with a histogram...'
-        candidates = search.query_iw('sift', image_words)
-        print candidates[0:10]
-        for cand in candidates[0:10]:
-            print search.get_filename(cand[1])
+        print 'Query database with a SIFT histogram...'
+        sift_candidates = search.query_iw('sift', image_words)
 
     if feature_active('harris'):
         print 'Loading Harris vocabulary ...'
-        fname = args.prefix + base + '_harris_vocabulary.pkl'
+        fname = base + '_harris_vocabulary.pkl'
         with open(fname, 'rb') as f:
             harris_vocabulary = pickle.load(f)
 
         harris_query = ft.get_harris_features([args.query])[args.query]
         image_words = harris_vocabulary.project(harris_query)
-        print 'Query database with a histogram...'
-        candidates = search.query_iw('harris', image_words)
-        print candidates[0:10]
-        for cand in candidates[0:10]:
-            print search.get_filename(cand[1])
+        print 'Query database with an Harris histogram...'
+        harris_candidates = search.query_iw('harris', image_words)
 
 
     if feature_active('colorhist'):
         print 'Load colorhist features ..'
-        fname = args.prefix + base + '_colorhist.pkl'
+        fname = base + '_colorhist.pkl'
         with open(fname, 'rb') as f:
             colorhist_features = pickle.load(f)
         
         colorhist_query = ft.get_colorhist([args.query])[args.query]
-        candidates = search.candidates_from_colorhist(colorhist_query, colorhist_features)
-        print candidates[0:10]
+        print 'Query database with a colorhistogram'
+        colorhist_candidates = search.candidates_from_colorhist(colorhist_query, colorhist_features)
+
+    # Plotting results
+
+    
+
+    # Plot query image    
+    fig = plt.figure()
+    query_im = cv2.imread(args.query, cv2.IMREAD_COLOR)
+    # Convert colorspace from BGR to RGB since we're plotting with pyplot
+    query_im = cv2.cvtColor(query_im, cv2.COLOR_BGR2RGB)
+    plt.imshow(query_im)
+    plt.axis('off')
+    fig.canvas.set_window_title('Query Image') 
+
+    def plot_results(im_list, title):
+        fig = plt.figure()
+        i = 1
+        for im_name in im_list:
+            im = cv2.imread(im_name, cv2.IMREAD_COLOR)
+            im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+            plt.subplot(2,3,i)
+            plt.imshow(im)
+            plt.title(i)
+            plt.axis('off')
+            i += 1
+        fig.canvas.set_window_title(title) 
+
+    if not sift_candidates == None:
+        sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:6]
+        plot_results(sift_winners, 'SIFT Results')
+
+    if not harris_candidates == None:
+        harris_winners = [search.get_filename(cand[1]) for cand in harris_candidates][0:6]
+        plot_results(harris_winners, 'Harris Results')
+
+    if not colorhist_candidates == None:
+        plot_results(colorhist_candidates[0:6], 'Colorhistogram Results')
+    plt.show()
