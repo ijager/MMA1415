@@ -3,6 +3,7 @@
 import glob
 import cv2
 import argparse
+import pyexiv2
 
 parser = argparse.ArgumentParser(description="Resize tool to resize a batch of images.")
 parser.add_argument("image_path", help="The path to the images")
@@ -26,6 +27,7 @@ for type_ in types:
 
 for image in image_list:
     im = cv2.imread(image)
+
     h,w,d = im.shape
     new_width = int(args.width)
     if args.preserve.lower() == 'true':
@@ -34,9 +36,23 @@ for image in image_list:
     else:
         new_height = int(args.height)
     im = cv2.resize(im, (new_width,new_height))
-    if (outfile != ''):
+    if (args.output != ''):
         outfile = args.output +'/'+ image.split('/')[-1]
     else:
         outfile = image
     print 'resized: ', outfile
+    
+    
+    # copy and correct metadata
+    source_image = pyexiv2.ImageMetadata(image)
+    source_image.read()
     cv2.imwrite(outfile, im)
+    
+    dest_image = pyexiv2.ImageMetadata(outfile)
+    dest_image.read()
+    source_image.copy(dest_image)
+    dest_image["Exif.Photo.PixelXDimension"] = new_width
+    dest_image["Exif.Photo.PixelYDimension"] = new_height
+    dest_image.write()
+
+	
