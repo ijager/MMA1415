@@ -29,7 +29,7 @@ class Searcher:
 			result.append(d)
 			names.append(key)
 		i = np.argsort(result)
-		return np.array(names)[i]
+		return (np.array(names)[i] , np.array(result)[i])
 
 	def candidates_from_histogram(self, type, imwords):
 		""" Get list of images wth similar words. """

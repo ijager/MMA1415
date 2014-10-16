@@ -138,7 +138,7 @@ if __name__ == '__main__':
             if labels == None:
                 plt.title(i)
             else:
-                plt.title('D = '+str(labels[i-1])+'[m]')
+                plt.title(labels[i-1])
             plt.axis('off')
             i += 1
         fig.canvas.set_window_title(title) 
@@ -153,7 +153,15 @@ if __name__ == '__main__':
         plot_results(harris_winners, 'Harris Results')
 
     if not colorhist_candidates == None:
-        plot_results(colorhist_candidates[0:6], 'Colorhistogram Results')
+        print colorhist_candidates
+        distances = colorhist_candidates[1][0:6]
+        filenames = colorhist_candidates[0][0:6]
+        print 'distances:',distances
+        print 'names:', filenames
+
+        labels = [str(i+1) + ' ' + str(filenames[i]) + ' d: ' + str(distances[i]) for i in range(len(distances))]
+        print labels
+        plot_results(filenames, 'Colorhistogram Results', labels = labels)
 
     if not geo_candidates == None:
         labels = [x[1] for x in geo_candidates][0:6]
