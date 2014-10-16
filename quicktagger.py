@@ -13,7 +13,7 @@ import os
 image_path = "test_images/"
 types = ('*.jpg', '*.JPG', '*.png')
 numbered_file_regex = re.compile('.*\(\d*\)')
-
+same_name_counter_regex = re.compile('\(\d*\)')
 
 image_list = []
 
@@ -36,7 +36,7 @@ def process_tag_query(tag_type):
 		elif tag_type == 'choice':
 			query_string = 'Other tags. Separate by comma:\n'		
 		
-		user_input = raw_input(query_string)		
+		user_input = raw_input(query_string)
 		
 		if len(user_input) == 0:
 			print('No input read. Type \'exit\' to exit.')
@@ -50,7 +50,7 @@ def process_tag_query(tag_type):
 			result = user_input
 			valid_input_given = True
 		
-		elif tag_type == 'perspective':			
+		elif tag_type == 'perspective':
 			if user_input in ['t', 'tourist', '(t)ourist']:
 				result = 'tourist_perspective'
 				valid_input_given = True
@@ -135,7 +135,7 @@ for type_ in types:
 	image_list.extend(glob.glob(files))	
 
 print('Quicktagger v1.337')
-print('To enter the prespecified tags, you can usually just enter the first letter, so \'n\' instead of \'nk\' or \'nieuwe kerk\'')
+print('To enter the prespecified tags, you can usually just enter the first letter, so \'n\' instead of \'nk\' or \'nieuwe kerk\'.')
 print('If you\'ve made a mistake on an image, enter \'back\' after finishing the other tags of that image.')
 print('Enter \'exit\' at any time to quit.')
 
@@ -209,12 +209,13 @@ while not valid_input_given:
 				# if name already taken, append an index number
 				image_duplicate_nr = 1
 				while os.path.exists(fullpath):
-					print(fullpath +' already exists, renaming to: ')
+					print(fullpath +' already exists, saving as: ')
 					s = fullpath.split('.')
 					fullpath = ''.join(s[:len(s)-1]) 
 					if numbered_file_regex.match(fullpath):
 						# there is already a number in the filename
-						fullpath = fullpath[:-3]
+						m = same_name_counter_regex.search(fullpath)
+						fullpath = fullpath[:-(m.end()-m.start())]
 					fullpath = fullpath + '(' + str(image_duplicate_nr) +')' + file_extension
 					print(fullpath)
 					image_duplicate_nr += 1
@@ -232,7 +233,8 @@ while not valid_input_given:
 									+tag_dict['mood'] +', '\
 									+tag_dict['water'] + ', '
 				for tag in tag_dict['choice']:
-					user_comment_tag += ', ' + tag
+					user_comment_tag += tag + ', '
+				user_comment_tag = user_comment_tag[:-2] # remove last comma
 				exif_data['Exif.Photo.UserComment'] = user_comment_tag
 				exif_data.write()
 				
