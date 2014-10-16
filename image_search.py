@@ -10,11 +10,11 @@ class Searcher:
 	def __del__(self):
 		self.con.close()
 
-	def candidates_from_word(self, imword):
+	def candidates_from_word(self, type, imword):
 		""" Get list of images containing imword/ """
 
 		im_ids = self.con.execute(
-				"select distinct imid from imwords where wordid=%d" % imword).fetchall()
+				"select distinct imid from "+type+"_imwords where wordid=%d" % imword).fetchall()
 		return [i[0] for i in im_ids]
 
 
@@ -31,7 +31,7 @@ class Searcher:
 		i = np.argsort(result)
 		return np.array(names)[i]
 
-	def candidates_from_histogram(self, imwords):
+	def candidates_from_histogram(self, type, imwords):
 		""" Get list of images wth similar words. """
 
 		# get the word ids
@@ -39,7 +39,7 @@ class Searcher:
 		# find candidates
 		candidates = []
 		for word in words:
-			c = self.candidates_from_word(word)
+			c = self.candidates_from_word(type, word)
 			candidates += c
 		
 		# take all unique words and reverse sort on occurence
@@ -62,22 +62,22 @@ class Searcher:
 
 
 	
-	def get_imhistogram(self, imname):
+	def get_imhistogram(self, type, imname):
 		""" Return the word histogram for an image. """
 
 		im_id = self.con.execute(
 				"select rowid from imlist where filename='%s'" % imname).fetchone()
 		s = self.con.execute(
-				"select histogram from imhistograms where rowid='%d'" % im_id).fetchone()
+				"select histogram from "+type+"_imhistograms where rowid='%d'" % im_id).fetchone()
 
 		# use pickle to decode NumPy arrays from string
 		return pickle.loads(str(s[0]))
 
-	def query(self, imname):
+	def query(self, type, imname):
 		""" Find a list of matching images for imname"""
 
 		h = self.get_imhistogram(imname)
-		candidates = self.candidates_from_histogram(h)
+		candidates = self.candidates_from_histogram(type,h)
 
 		matchscores = []
 		for imid in candidates:
@@ -91,6 +91,24 @@ class Searcher:
 			#return a sorted list of distances and databse ids
 			matchscores.sort()
 		return matchscores
+
+	def query_iw(self,type, h):
+            """ Find a list of matching images for image histogram h"""
+            candidates = self.candidates_from_histogram(type,h)
+
+            matchscores = []
+            for imid in candidates:
+                    # get the name
+                    cand_name = self.con.execute(
+                                    "select filename from imlist where rowid=%d" % imid).fetchone()
+                    cand_h = self.get_imhistogram(type, cand_name)
+                    cand_dist = np.sqrt( np.sum( (h-cand_h)**2 ) ) #use L2 distance
+                    matchscores.append( (cand_dist, imid) )
+
+                    #return a sorted list of distances and databse ids
+                    matchscores.sort()
+            return matchscores
+
 
 
 	def get_filename(self,imid):
