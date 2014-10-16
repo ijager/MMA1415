@@ -120,4 +120,15 @@ if __name__ == '__main__':
 
     if not colorhist_candidates == None:
         plot_results(colorhist_candidates[0:6], 'Colorhistogram Results')
+
+    
+    def onKey(event):
+        if event.key == 'q' or event.key == 'escape':
+            sys.exit(0)
+
+
+    plt.connect('key_release_event', onKey)
     plt.show()
+
+
+
