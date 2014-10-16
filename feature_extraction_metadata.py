@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import exifread
 import glob
+import os
 
 # extract tags
 def extract_tags(filename):
@@ -12,36 +13,44 @@ def extract_tags(filename):
 	xx		Oude Jan (oj), Nieuwe Kerk (nk), Raadhuis (rh), Other (xx)	[object] 2 
 	z		Positive (p), Negative (n), None (z)						[mood] 3
 	w		Depicts water (w), Doesn't depict water (m)					[water] 4
-	tag		Tag of choice <= 12 letters									[tag] 5
+	tag		Tag of choice												[tag] 5
 	'''
 	words = filename.split('_')
 	result = 0
-	if len(words) != 6:
-		print('Improperly formatted tags')
-		result = 1	
+	tags = []
+	if len(words) < 6:
+		print('Invalid number of tags: ' + str(words))
 	
 	if not words[1] in ('t', 'r', 'y'):
 		print('Invalid tag for perspective: ' + words[1])
 		result = 1
+	else:
+		tags.append(words[1])
 		
 	if not words[2] in ('oj', 'nk', 'rh', 'xx'):
 		print('Invalid tag for object: ' + words[2])
 		result = 1
+	else:
+		tags.append(words[2])
 		
 	if not words[3] in ('p', 'n', 'z'):
 		print('Invalid tag for mood: ' + words[3])
 		result = 1
+	else:
+		tags.append(words[3])
 		
 	if not words[4] in ('w', 'm'):
 		print('Invalid tag for water: ' + words[4])
 		result = 1
+	else:
+		tags.append(words[4])
 		
-	if len(words[5]) > 12:
-		print('Title is too long: ' + words[5])
-		result = 1
-		
+	# user might have specified name with underscores.
+	# put remaining words into a single string
+	tags.append(''.join([str(x)+'_' for x in words[5:]])[:-1])
+			
 	if result == 0:
-		result = words
+		result = tags
 	
 	return result
 		
@@ -73,15 +82,23 @@ def extract_exif(filename):
 			longRef		= exif_tags['GPS GPSLongitudeRef'].values
 			latRef		= exif_tags['GPS GPSLatitudeRef'].values		
 			
-			friendly_name = str(longitude[0]) + '° ' + str(longitude[1]) +'\' ' + str(longitude[2]) +'\'\' ' + longRef 
-			friendly_name += ', ' + str(latitude[0]) + '° ' + str(latitude[1]) +'\' ' + str(latitude[2]) +'\'\' ' + latRef 
+			friendly_name = str(longitude[0]) + 'd ' + str(longitude[1]) +'\' ' + str(longitude[2]) +'\'\' ' + longRef 
+			friendly_name += ', ' + str(latitude[0]) + 'd ' + str(latitude[1]) +'\' ' + str(latitude[2]) +'\'\' ' + latRef 
 			
 			return (longitude, longRef, latitude, latRef, friendly_name)
 			
 		
 	return 0
 
-extract_exif('../DelftImages/agi_r_xx_n_w_gracht.jpg')
+def extract_metadata(im_list):
+	features = []
+	for im_name in im_list:
+		tags = extract_tags(os.path.basename(im_name))
+		geotags = extract_exif(im_name)
+		features.append( (tags, geotags) )
+		
+	return features	
+	
 
 
 
