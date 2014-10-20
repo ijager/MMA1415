@@ -40,10 +40,13 @@ def feature_active(name):
     i.e. the feature has been selected via a command line option to be used for processing"""
     return (args.feature == name or args.feature == 'all')
 
+OKGREEN = '\033[92m'
+WARNING = '\033[93m'
+ENDC = '\033[0m'
 def print_matching_tags(candidate_filenames, distances):
     for i in range(len(candidate_filenames)):
         candidate_tags = feat_meta.extract_tags(candidate_filenames[i])
-        matching_tags = ', '.join([c.upper() if c in query_tags else c.lower()+ ' ' for c in candidate_tags])
+        matching_tags = ', '.join([OKGREEN+c.upper()+ENDC if c in query_tags else WARNING+c.lower()+ENDC+' ' for c in candidate_tags])
         print ( str(i+1) + ': ' + candidate_filenames[i] + '\n\td='+str(distances[i]) +'\n\t' + matching_tags)
 
 
@@ -155,11 +158,19 @@ if __name__ == '__main__':
     
     if not sift_candidates == None:
         sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:6]
+        sift_distances = [cand[0] for cand in sift_candidates][0:6]
         plot_results(sift_winners, 'SIFT Results')
+        print '\nSIFT candidates:'
+        print 'Tags in query image: ' +''.join([x.upper()+' ' for x in query_tags])
+        print_matching_tags(sift_winners, sift_distances)
 
     if not harris_candidates == None:
         harris_winners = [search.get_filename(cand[1]) for cand in harris_candidates][0:6]
+        harris_distances = [cand[0] for cand in harris_candidates][0:6]
         plot_results(harris_winners, 'Harris Results')
+        print '\nHARRIS candidates:'
+        print 'Tags in query image: ' +''.join([x.upper()+' ' for x in query_tags])
+        print_matching_tags(harris_winners, harris_distances)
 
     if not colorhist_candidates == None:
         distances = colorhist_candidates[1][0:6]
@@ -168,6 +179,7 @@ if __name__ == '__main__':
         labels = [str(i+1) + ' ' + str(filenames[i]) + ' d: ' + str(distances[i]) for i in range(len(distances))]
         plot_results(filenames, 'Colorhistogram Results', labels = labels)
         print '\nCOLOR HISTOGRAM candidates:'
+        print 'Tags in query image: ' +''.join([x.upper()+' ' for x in query_tags])
         print_matching_tags(filenames, distances)
         
 
@@ -177,6 +189,7 @@ if __name__ == '__main__':
         plot_results([x[0] for x in geo_candidates][0:6], 'Geodistances Results', labels = labels)
         
         print '\nGEOTAG candidates:'
+        print 'Tags in query image: ' +''.join([x.upper()+' ' for x in query_tags])
         print_matching_tags(filenames,labels)
             
   
