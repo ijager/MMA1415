@@ -6,11 +6,15 @@ import os
 
 # extract tags
 def extract_tags(filename):
-	exif_data = pyexiv2.ImageMetadata(filename)
-	exif_data.read()
-	tags = exif_data['Exif.Photo.UserComment'].value.split(',')
-	tags = [t.strip() for t in tags]
-	return tags
+	try:
+		exif_data = pyexiv2.ImageMetadata(filename)
+		exif_data.read()
+		tags = exif_data['Exif.Photo.UserComment'].value.split(',')
+		tags = [t.strip() for t in tags]
+		return tags
+	except:
+		print 'No tags could be found for: ' + filename
+		return []
 
 # extract exif
 def extract_exif(filename):

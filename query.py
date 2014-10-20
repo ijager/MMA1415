@@ -10,7 +10,7 @@ import sys
 import image_search
 import os.path
 import metadata_distance 
-
+import feature_extraction_metadata as feat_meta
 
 # global variables
 sift_candidates = None
@@ -40,6 +40,11 @@ def feature_active(name):
     i.e. the feature has been selected via a command line option to be used for processing"""
     return (args.feature == name or args.feature == 'all')
 
+def print_matching_tags(candidate_filenames, distances):
+    for i in range(len(candidate_filenames)):
+        candidate_tags = feat_meta.extract_tags(candidate_filenames[i])
+        matching_tags = ', '.join([c.upper() if c in query_tags else c.lower()+ ' ' for c in candidate_tags])
+        print ( str(i+1) + ': ' + candidate_filenames[i] + '\n\td='+str(distances[i]) +'\n\t' + matching_tags)
 
 
 
@@ -144,6 +149,10 @@ if __name__ == '__main__':
         fig.canvas.set_window_title(title) 
 
     # If candidates exists, show the top 6 candidates
+    
+    # show co-incident tags
+    query_tags = feat_meta.extract_tags(args.query)
+    
     if not sift_candidates == None:
         sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:6]
         plot_results(sift_winners, 'SIFT Results')
@@ -153,19 +162,24 @@ if __name__ == '__main__':
         plot_results(harris_winners, 'Harris Results')
 
     if not colorhist_candidates == None:
-        print colorhist_candidates
         distances = colorhist_candidates[1][0:6]
         filenames = colorhist_candidates[0][0:6]
-        print 'distances:',distances
-        print 'names:', filenames
 
         labels = [str(i+1) + ' ' + str(filenames[i]) + ' d: ' + str(distances[i]) for i in range(len(distances))]
-        print labels
         plot_results(filenames, 'Colorhistogram Results', labels = labels)
+        print '\nCOLOR HISTOGRAM candidates:'
+        print_matching_tags(filenames, distances)
+        
 
     if not geo_candidates == None:
+        filenames = [x[0] for x in geo_candidates][0:6]
         labels = [x[1] for x in geo_candidates][0:6]
         plot_results([x[0] for x in geo_candidates][0:6], 'Geodistances Results', labels = labels)
+        
+        print '\nGEOTAG candidates:'
+        print_matching_tags(filenames,labels)
+            
+  
    
     # Add Key event to close the application with the 'q' or 'escape' key
     def onKey(event):
