@@ -10,7 +10,7 @@ import sys
 import image_search
 import os.path
 import metadata_distance 
-import feature_extraction_metadata as feat_meta
+import metadata_extraction as feat_meta
 
 # global variables
 sift_candidates = None

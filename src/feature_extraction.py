@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import progressbar
 import harris
-import feature_extraction_metadata as meta
+import metadata_extraction as meta
 
 def extract_metadata(im_list):
 	features = {}
