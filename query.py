@@ -107,18 +107,17 @@ if __name__ == '__main__':
             geo_features = pickle.load(f)
 
         metadata = ft.extract_metadata([args.query])[args.query]
-        if not metadata_distance.has_geotag(metadata):
-            print 'Error: query image has no geotag!'
-            sys.exit(1)
-        distances = []
-        for key in geo_features.keys():
-            candidate_metadata = geo_features[key]
-            if metadata_distance.has_geotag(candidate_metadata):
-                distances.append((key, metadata_distance.compute_geographic_distance(metadata, candidate_metadata)))
+        if metadata_distance.has_geotag(metadata):
+            distances = []
+            for key in geo_features.keys():
+                candidate_metadata = geo_features[key]
+                if metadata_distance.has_geotag(candidate_metadata):
+                    distances.append((key, metadata_distance.compute_geographic_distance(metadata, candidate_metadata)))
+                
+            geo_candidates = sorted(distances, key = lambda x: x[1])
+        else:
+            print 'Warning: query image has no geotag!'
             
-        geo_candidates = sorted(distances, key = lambda x: x[1])
-            
-        
 
 
 
