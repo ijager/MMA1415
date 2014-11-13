@@ -2,14 +2,15 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from video_tools import *
+import feature_extraction as ft
 
 # Path to video file to analyse 
-video = '../test_videos/clip_02A.mp4'
+video = '../test_videos/clip_09.mp4'
 
-frame_count = get_frame_count(video, util='ffprobe')
+# Retrieve frame count. We need to add one to the frame count because cv2 somehow 
+# has one extra frame compared to the number returned by avprobe.
+frame_count = get_frame_count(video, util='ffprobe') + 1
 frame_rate = get_frame_rate(video, util='ffprobe')
-print 'number of frames:', frame_count
-print 'frame rate:', frame_rate
 
 # create an cv2 capture object
 cap = cv2.VideoCapture(video)
@@ -21,7 +22,8 @@ plt.show()
 
 # store previous frame
 prev_frame = None
-
+x = np.zeros(frame_count)
+index = 0
 while(cap.isOpened()):
 
     # grab next video frame
@@ -31,7 +33,11 @@ while(cap.isOpened()):
         break
 
     #== Do your processing here ==#
-
+    hist = ft.colorhist(frame)
+    plt.cla()
+    plt.plot(hist)
+    x[index] = index
+    index += 1
 
 
     # show frame
@@ -43,7 +49,6 @@ while(cap.isOpened()):
         break
 
     prev_frame = frame
-
 
 # clean up after ourselves
 cap.release()
