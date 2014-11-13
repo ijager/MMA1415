@@ -9,8 +9,7 @@ import pickle
 import glob
 import feature_extraction as ft    
 from scipy.io.wavfile import read
-import wave
-import subprocess
+from video_tools import *
 
 
 parser = argparse.ArgumentParser(description="Video Processing tool extracts features for each frame of video and for its corresponding audio track")
@@ -37,7 +36,6 @@ def frame_to_audio(frame_nbr, frame_rate, fs, audio):
 
 
 # Processing of videos
-from video_tools import *
 
 
 colorhist_features = {}

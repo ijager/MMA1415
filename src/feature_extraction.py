@@ -15,7 +15,17 @@ def extract_metadata(im_list):
 		features[im_name] = (tags, geotags)
 		
 	return features	
-	
+
+def harris_features(im):
+    # Exercise 2.4
+    # add code for extracting Harris features from im here
+    #TODO Remove:
+=   #response = harris.compute_harris_response(im)
+    response = cv2.cornerHarris(im, 7, 5, 0.05)
+    points = harris.get_harris_points(response)
+    desc = harris.get_descriptors(im, points)
+    return points, desc
+
 def get_harris_features(im_list):
     total = len(im_list)
     bar = progressbar.ProgressBar(maxval=total, \
@@ -26,18 +36,24 @@ def get_harris_features(im_list):
     count = 0
     for im_name in im_list:
         im = cv2.imread(im_name, 0)
-        # Exercise 2.4
-        # add code for extracting Harris features from im here
-        # strore them in the features dict keyed by im_name
-        #TODO REMOVE: response = harris.compute_harris_response(im)
-        #TODO REMOVE: response = cv2.cornerHarris(im, 7, 5, 0.05)
-        #TODO REMOVE: points = harris.get_harris_points(response)
-        #TODO REMOVE: desc = harris.get_descriptors(im, points)
-        #TODO REMOVE: features[im_name] = np.array(desc)
+        points, desc = harris_features(im)
+        features[im_name] = np.array(desc)
         bar.update(count)
         count += 1
     bar.finish()
     return features
+
+def colorhist(im):
+    chans = cv2.split(im)
+    color_hist = np.zeros((256,len(chans)))
+    # Exercise 2.5
+    # Add code to calculate the histogram for each color channel chan here
+    # Store each histogram in color_hist[:,chan_nbr] 
+    # Each histrogram should have 256 bins.
+    # TODO REMOVE:
+    for i in range(len(chans)):
+        color_hist[:,i] = cv2.calcHist(chans[i], [0], None, [256], [0, 256]).flatten() / (chans[i].shape[0] * chans[i].shape[1])
+    return color_hist
 
 
 def get_colorhist(im_list):
@@ -50,19 +66,8 @@ def get_colorhist(im_list):
     count = 0
     for im_name in im_list:
         im = cv2.imread(im_name)
-        chans = cv2.split(im)
-        color_hist = np.zeros((256,3))
-        chan_nbr = 0
-        for chan in chans:
-            # Exercise 2.5
-            # Add code to calculate the histogram for each color channel chan here
-            # Store each histogram in color_hist[:,chan_nbr] 
-            # Each histrogram should have 256 bins.
-            # Don't forget to store the color histogram in the features dict keyed
-            # by im_name again, once you've looped through the 3 color channels.
-            # TODO REMOVE: color_hist[:,chan_nbr] = cv2.calcHist([chan], [0], None, [256], [0, 256])[0] / (chan.shape[0] * chan.shape[1]);
-            chan_nbr += 1
-        # TODO REMOVE: features[im_name] = color_hist
+        color_hist = colorhist(im)
+        features[im_name] = color_hist
         bar.update(count)
         count += 1
     bar.finish()
