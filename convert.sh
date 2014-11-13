@@ -9,3 +9,7 @@ done
 for i in *.mp4; do
     avconv -i "${i}" -ar 16000 "${i%.mp4}.wav"
 done
+
+for i in *.mp4; do
+    avconv -i "${i}" -r 30 "mma_${i}" 
+done
