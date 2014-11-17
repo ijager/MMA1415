@@ -5,6 +5,7 @@ import progressbar
 import harris
 import exifread
 import pyexiv2
+#import cv2.xfeatures2d.SIFT_create as SIFT
 from scikits.talkbox.features import mfcc
 
 def extract_metadata(im_list):
@@ -20,7 +21,7 @@ def harris_features(im):
     # Exercise 2.4
     # add code for extracting Harris features from im here
     #TODO Remove:
-=   #response = harris.compute_harris_response(im)
+    #response = harris.compute_harris_response(im)
     response = cv2.cornerHarris(im, 7, 5, 0.05)
     points = harris.get_harris_points(response)
     desc = harris.get_descriptors(im, points)
@@ -75,7 +76,7 @@ def get_colorhist(im_list):
 
 def get_sift_features(im_list):
     """get_sift_features accepts a list of image names and computes the sift descriptos for each image. It returns a dictionary with descriptor as value and image name as key """
-    sift = cv2.SIFT()
+    sift = cv2.xfeatures2d.SIFT_create()
     features = {}
     total = len(im_list)
     bar = progressbar.ProgressBar(maxval=total, \
