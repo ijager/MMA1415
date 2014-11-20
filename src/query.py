@@ -10,7 +10,6 @@ import sys
 import image_search
 import os.path
 import metadata_distance 
-import metadata_extraction as feat_meta
 
 # global variables
 sift_candidates = None
@@ -45,9 +44,10 @@ WARNING = '\033[93m'
 ENDC = '\033[0m'
 def print_matching_tags(candidate_filenames, distances):
     for i in range(len(candidate_filenames)):
-        candidate_tags = feat_meta.extract_tags(candidate_filenames[i])
-        matching_tags = ', '.join([OKGREEN+c.upper()+ENDC if c in query_tags else WARNING+c.lower()+ENDC+' ' for c in candidate_tags])
-        print ( str(i+1) + ': ' + candidate_filenames[i] + '\n\td='+str(distances[i]) +'\n\t' + matching_tags)
+        filename = candidate_filenames[i]
+        candidate_tags = ft.extract_metadata([filename])
+        matching_tags = ', '.join([OKGREEN+c.upper()+ENDC if c in query_tags[args.query][0] else WARNING+c.lower()+ENDC+' ' for c in candidate_tags[filename][0] ])
+        print ( str(i+1) + ': ' + filename + '\n\td='+str(distances[i]) +'\n\t' + matching_tags)
 
 
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     # If candidates exists, show the top 6 candidates
     
     # show co-incident tags
-    query_tags = feat_meta.extract_tags(args.query)
+    query_tags = ft.extract_metadata([args.query])
     
     if not sift_candidates == None:
         sift_winners = [search.get_filename(cand[1]) for cand in sift_candidates][0:6]

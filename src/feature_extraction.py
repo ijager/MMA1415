@@ -91,6 +91,8 @@ def get_sift_features(im_list):
         # add code for extracting SIFT features from im here.
         # store them in the features dict keyed by im_name
         
+        kp, desc = sift.detectAndCompute(im, None)
+        features[im_name] = desc
         # TODO REMOVE: kp, desc = sift.detectAndCompute(im, None)
         # TODO REMOVE: features[im_name] = desc
         count += 1
@@ -113,7 +115,7 @@ def extract_tags(filename):
 def extract_exif(filename):
     # find if there is a geolocation tag, and if so return it.
     # if geolocation was not turned on, return 'no-geotag'
-    
+    print 'filename:', filename 
     with open(filename) as f:
         exif_tags = exifread.process_file(f)
         if 'GPS GPSLongitude' in exif_tags:
