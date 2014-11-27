@@ -39,7 +39,7 @@ class Indexer(object):
         vidid = self.get_id(vidname)
 
         # get features from descriptor
-       # mfccs = descr['mfcc'] # Nx13 np array (or however many mfcc coefficients there are)
+        mfccs = descr['mfcc'] # Nx13 np array (or however many mfcc coefficients there are)
         audio = descr['audio'] # Nx1 np array
         colhist = descr['colhist'] # Nx3x256 np array
         tempdif = descr['tempdif'] # Nx1 np array
@@ -48,7 +48,7 @@ class Indexer(object):
         # use pickle to encode NumPy arrays as strings
         self.con.execute("insert into colorhists(vidid,hists) values (?,?)", (vidid,pickle.dumps(colhist)))
         self.con.execute("insert into tempdiffs(vidid,diffs) values (?,?)", (vidid,pickle.dumps(tempdif)))
-      #  self.con.execute("insert into mfccs(vidid,coeffs) values (?,?)", (vidid,pickle.dumps(mfccs)))
+        self.con.execute("insert into mfccs(vidid,coeffs) values (?,?)", (vidid,pickle.dumps(mfccs)))
         self.con.execute("insert into audiopowers(vidid,powers) values (?,?)", (vidid,pickle.dumps(audio)))
         
     def get_id(self, vidname):

@@ -72,6 +72,7 @@ def process_videos(video_list, indx):
         colorhists = []
         sum_of_differences = []
         audio_powers = []
+        mfccs = []
 
         prev_frame = None
         frame_nbr = 0
@@ -82,6 +83,8 @@ def process_videos(video_list, indx):
             audio_frame = frame_to_audio(frame_nbr, frame_rate, fs, wav_data)
             power = np.sum(audio_frame**2)
             audio_powers.append(power)
+            mfcc_coeffs = ft.extract_mfcc(audio_frame)
+            mfccs.append(mfcc_coeffs)
            
             # calculate sum of differences
             if not prev_frame == None:
@@ -99,6 +102,7 @@ def process_videos(video_list, indx):
         # colhist = descr['colhist'] # Nx3x256 np array
         # tempdif = descr['tempdif'] # Nx1 np array
         descr = {}
+        descr['mfcc'] = np.array(mfccs)
         descr['audio'] = np.array(audio_powers)
         descr['colhist'] = np.array(colorhists)
         descr['tempdif'] = np.array(sum_of_differences)
