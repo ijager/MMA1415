@@ -58,9 +58,11 @@ def create_database():
 
 # Processing of videos
 def process_videos(video_list, indx):
+    total = len(video_list)
+    progress_count = 0
     for video in video_list:
-
-        print 'processing:', video
+        progress_count += 1
+        print 'processing: ',video, ' (' ,progress_count, ' of ' ,total,')'
         cap = cv2.VideoCapture(video)
         frame_rate = get_frame_rate(video) 
 

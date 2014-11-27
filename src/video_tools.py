@@ -8,6 +8,12 @@ def video_info(video, util):
     out, err = process.communicate()
     return out
 
+def get_duration(video, util='avprobe'):
+    info = video_info(video, util)
+    pattern = 'codec_type\=video.*?duration\=(\d+[\/\d.]*|\d)'
+    result = re.search(pattern, info, re.DOTALL).group(1)
+    return float(result)
+
 def get_frame_rate(video, util='avprobe'):
     info = video_info(video, util)
     pattern = 'codec_type\=video.*?avg_frame_rate\=(\d+[\/\d.]*|\d)'

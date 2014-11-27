@@ -9,8 +9,8 @@ video = '../test_videos/clip_09.mp4'
 
 # Retrieve frame count. We need to add one to the frame count because cv2 somehow 
 # has one extra frame compared to the number returned by avprobe.
-frame_count = get_frame_count(video, util='ffprobe') + 1
-frame_rate = get_frame_rate(video, util='ffprobe')
+frame_count = get_frame_count(video) + 1
+frame_rate = get_frame_rate(video)
 
 # create an cv2 capture object
 cap = cv2.VideoCapture(video)

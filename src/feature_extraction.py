@@ -148,8 +148,9 @@ def extract_exif(filename):
     
 def extract_mfcc(audio_samples):
     # find the smallest non-zero sample in both channels
-    nonzero = min(min([abs(x) for x in sig[:,0] if abs(x) > 0]), min([abs(x) for x in sig[:,1] if abs(x) > 0]))
-    sig[sig==0] = nonzero
-    ceps, mspec, spec = mfcc(sig)
+    #nonzero = min(min([abs(x) for x in audio_samples[:,0] if abs(x) > 0]), min([abs(x) for x in audio_samples[:,1] if abs(x) > 0]))
+    nonzero = 1
+    audio_samples[audio_samples==0] = nonzero
+    ceps, mspec, spec = mfcc(audio_samples)
     return ceps
     
