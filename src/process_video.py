@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -55,7 +56,7 @@ def create_database():
         indx.create_tables()
     
     return indx
-
+#
 # Processing of videos
 def process_videos(video_list, indx):
     total = len(video_list)
@@ -65,6 +66,8 @@ def process_videos(video_list, indx):
         print 'processing: ',video, ' (' ,progress_count, ' of ' ,total,')'
         cap = cv2.VideoCapture(video)
         frame_rate = get_frame_rate(video) 
+        total_frames = get_frame_count(video)
+        total_audio_frames = get_frame_count_audio(video)
 
         # get corresponding audio file
         filename, fileExtension = os.path.splitext(video)
@@ -83,11 +86,17 @@ def process_videos(video_list, indx):
             if frame == None:
                 break
             audio_frame = frame_to_audio(frame_nbr, frame_rate, fs, wav_data)
-            power = np.sum(audio_frame**2)
-            audio_powers.append(power)
-            mfcc_coeffs = ft.extract_mfcc(audio_frame)
-            mfccs.append(mfcc_coeffs)
-           
+
+            # check if audio frame is long enough for mfcc transformation
+            if len(audio_frame) >= 256:
+                power = np.sum(audio_frame**2)
+                audio_powers.append(power)
+                ceps, mspec, spec = ft.extract_mfcc(audio_frame)
+                plt.cla()
+                plt.specgram(spec)
+                plt.draw()
+                mfccs.append(ceps)
+                
             # calculate sum of differences
             if not prev_frame == None:
                 diff = np.absolute(prev_frame - frame)

@@ -7,7 +7,7 @@ for i in *.3gp; do
 done
 
 for i in *.mp4; do
-    avconv -i "${i}" -ar 16000 "${i%.mp4}.wav"
+    avconv -i "${i}" -acodec pcm_s16le -ac 1 -ar 16000 "${i%.mp4}.wav"
 done
 
 for i in *.mp4; do

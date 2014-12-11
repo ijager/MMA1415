@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 from video_tools import *
 import feature_extraction as ft
+from scikits.talkbox.features import mfcc
 
 # Path to video file to analyse 
 video = '../test_videos/clip_09.mp4'
@@ -16,14 +17,11 @@ frame_rate = get_frame_rate(video)
 cap = cv2.VideoCapture(video)
 
 # initialize a figure to do interactive plotting
-fig = plt.figure(1)
+plt.figure()
 plt.ion()
 plt.show()
-
 # store previous frame
 prev_frame = None
-x = np.zeros(frame_count)
-index = 0
 while(cap.isOpened()):
 
     # grab next video frame
@@ -33,11 +31,6 @@ while(cap.isOpened()):
         break
 
     #== Do your processing here ==#
-    hist = ft.colorhist(frame)
-    plt.cla()
-    plt.plot(hist)
-    x[index] = index
-    index += 1
 
 
     # show frame

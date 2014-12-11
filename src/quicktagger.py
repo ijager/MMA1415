@@ -10,7 +10,7 @@ import os
 
 
 
-image_path = "test_images/"
+image_path = "../"
 types = ('*.jpg', '*.JPG', '*.png')
 numbered_file_regex = re.compile('.*\(\d*\)')
 same_name_counter_regex = re.compile('\(\d*\)')

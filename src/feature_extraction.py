@@ -151,6 +151,5 @@ def extract_mfcc(audio_samples):
     #nonzero = min(min([abs(x) for x in audio_samples[:,0] if abs(x) > 0]), min([abs(x) for x in audio_samples[:,1] if abs(x) > 0]))
     nonzero = 1
     audio_samples[audio_samples==0] = nonzero
-    ceps, mspec, spec = mfcc(audio_samples)
-    return ceps
+    return mfcc(audio_samples)
     

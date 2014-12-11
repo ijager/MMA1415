@@ -26,4 +26,10 @@ def get_frame_count(video, util='avprobe'):
     result = re.search(pattern, info, re.DOTALL)
     return int(result.group(1))
 
+def get_frame_count_audio(video, util='avprobe'):
+    info = video_info(video, util)
+    pattern = 'codec_type\=audio.*?nb_frames\=([0-9]+)'
+    result = re.search(pattern, info, re.DOTALL)
+    return int(result.group(1))
+
 
