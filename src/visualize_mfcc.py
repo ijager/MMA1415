@@ -21,7 +21,7 @@ print 'Processing wavfile: ' + args.wav_path + ' ... '
 
 print 'Calculating MFCCs ... '
 # extract mfcc coefficents 
-ceps, mspec, spec = ft.extract_mfcc(data)
+ceps, mspec, spec = ft.extract_mfcc(data, fs)
 
 print 'Generating spectogram ... '
 

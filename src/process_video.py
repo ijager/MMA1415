@@ -91,7 +91,7 @@ def process_videos(video_list, indx):
             if len(audio_frame) >= 256:
                 power = np.sum(audio_frame**2)
                 audio_powers.append(power)
-                ceps, mspec, spec = ft.extract_mfcc(audio_frame)
+                ceps, mspec, spec = ft.extract_mfcc(audio_frame, fs)
                 plt.cla()
                 plt.specgram(spec)
                 plt.draw()
@@ -106,6 +106,7 @@ def process_videos(video_list, indx):
             colorhists.append(ft.colorhist(frame))
             prev_frame = frame
             frame_nbr += 1
+        print 'end:', frame_nbr
         
         # prepare descriptor for database
         # mfccs = descr['mfcc'] # Nx13 np array (or however many mfcc coefficients there are)
