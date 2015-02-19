@@ -5,7 +5,6 @@ import progressbar
 import harris
 import exifread
 import pyexiv2
-#import cv2.xfeatures2d.SIFT_create as SIFT
 from scikits.talkbox.features import mfcc
 
 def extract_metadata(im_list):
@@ -18,10 +17,6 @@ def extract_metadata(im_list):
 	return features	
 
 def harris_features(im):
-    # Exercise 2.4
-    # add code for extracting Harris features from im here
-    #TODO Remove:
-    #response = harris.compute_harris_response(im)
     response = cv2.cornerHarris(im, 7, 5, 0.05)
     points = harris.get_harris_points(response)
     desc = harris.get_descriptors(im, points)
@@ -47,11 +42,6 @@ def get_harris_features(im_list):
 def colorhist(im):
     chans = cv2.split(im)
     color_hist = np.zeros((256,len(chans)))
-    # Exercise 2.5
-    # Add code to calculate the histogram for each color channel chan here
-    # Store each histogram in color_hist[:,chan_nbr] 
-    # Each histrogram should have 256 bins.
-    # TODO REMOVE:
     for i in range(len(chans)):
         color_hist[:,i] = cv2.calcHist(chans[i], [0], None, [256], [0, 256]).flatten() / (chans[i].shape[0] * chans[i].shape[1])
     return color_hist
@@ -87,14 +77,8 @@ def get_sift_features(im_list):
     for im_name in im_list:
         bar.update(count)
         im = cv2.imread(im_name, 0)
-        # Exercise 2.3
-        # add code for extracting SIFT features from im here.
-        # store them in the features dict keyed by im_name
-        
         kp, desc = sift.detectAndCompute(im, None)
         features[im_name] = desc
-        # TODO REMOVE: kp, desc = sift.detectAndCompute(im, None)
-        # TODO REMOVE: features[im_name] = desc
         count += 1
     bar.finish()
     return features
